@@ -3,14 +3,19 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-   "test": "jest",
-   "start": "node src/ditokoku.js"
- },
+    "start": "env-cmd -f src/configurations/.env babel-node src/ditokoku.js --ext js,graphql",
+    "test": "env-cmd -f src/configurations/.env.test jest --watch",
+    "clean": "rm -rf build && mkdir build",
+    "build:server": "babel -d ./dist ./src -s",
+    "build": "npm run clean && npm run build:server",
+    "execute": "NODE_ENV=production node dist/ditokoku.js"
+  },
   "jest": {
     "testEnvironment": "node"
   },
   "dependencies": {
     "axios": "^1.2.2",
+    "babel-cli": "^7.0.0-0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "core-js": "^3.22.6",
