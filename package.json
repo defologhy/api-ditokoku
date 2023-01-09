@@ -3,13 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "env-cmd -f src/configurations/.env.development babel-node src/ditokoku.js --ext js,graphql",
-    "test": "env-cmd -f src/configurations/.env.test jest --watch",
-    "clean": "rm -rf build && mkdir build",
-    "build:server": "babel -d ./dist ./src -s",
-    "build": "npm run clean && npm run build:server",
-    "execute": "NODE_ENV=production node dist/ditokoku.js"
-  },
+   "test": "jest",
+   "start": "node src/ditokoku.js"
+ },
   "jest": {
     "testEnvironment": "node"
   },
