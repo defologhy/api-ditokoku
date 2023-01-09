@@ -3,6 +3,7 @@ import compression from 'compression';
 import helmet from 'helmet';
 import resellersRoutesV1 from "./routes/v1/resellers";
 import gendersRoutesV1 from "./routes/v1/genders";
+import commonRoutesV1 from "./routes/commons";
 
 import databaseSynchronize from "./databases/database-synchronize";
 
@@ -41,6 +42,7 @@ app.use(express.static('public'));
 //routes middleware
 app.use("/api/v1/resellers", resellersRoutesV1);
 app.use("/api/v1/genders", gendersRoutesV1);
+app.use("/api/v1/common", commonRoutesV1);
 
 // databaseSynchronize();
 
