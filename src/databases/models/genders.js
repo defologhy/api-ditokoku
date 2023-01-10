@@ -16,7 +16,7 @@ const Genders = ditokokuSequelize.define('Genders', {
     created_datetime: {
         type: DataTypes.DATE(3),
         allowNull: false,
-        defaultValue: fn('NOW')
+        // defaultValue: fn('NOW')
     },
     created_user_id: {
         type: DataTypes.INTEGER,
@@ -25,7 +25,7 @@ const Genders = ditokokuSequelize.define('Genders', {
     last_updated_datetime: {
         type: DataTypes.DATE(3),
         allowNull: false,
-        defaultValue: fn('NOW')
+        // defaultValue: fn('NOW')
     },
     last_updated_user_id: {
         type: DataTypes.INTEGER,

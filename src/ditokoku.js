@@ -1,6 +1,8 @@
 import app from "./app";
 import {utcToZonedTime, format} from "date-fns-tz";
 
+// const port = process.env.APP_PORT || 80;
+// for heroku
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, err => {
     if(err) throw err;

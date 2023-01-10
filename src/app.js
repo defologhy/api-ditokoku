@@ -44,6 +44,6 @@ app.use("/api/v1/resellers", resellersRoutesV1);
 app.use("/api/v1/genders", gendersRoutesV1);
 app.use("/api/v1/common", commonRoutesV1);
 
-// databaseSynchronize();
+databaseSynchronize();
 
 export { app as default}
