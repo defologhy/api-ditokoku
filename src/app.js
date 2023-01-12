@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import resellersRoutesV1 from "./routes/v1/resellers";
 import gendersRoutesV1 from "./routes/v1/genders";
 import commonRoutesV1 from "./routes/commons";
+import configurationBalanceBonusRoutesV1 from './routes/v1/configuration-balance-bonus';
 
 import databaseSynchronize from "./databases/database-synchronize";
 
@@ -62,6 +63,7 @@ app.use(express.static('public'));
 app.use("/api/v1/resellers", resellersRoutesV1);
 app.use("/api/v1/genders", gendersRoutesV1);
 app.use("/api/v1/common", commonRoutesV1);
+app.use("/api/v1/configuration-balance-bonus", configurationBalanceBonusRoutesV1);
 
 databaseSynchronize();
 

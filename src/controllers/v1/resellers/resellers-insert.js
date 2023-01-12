@@ -27,7 +27,7 @@ const resellersInsert = async (request, response) => {
         }
 
         //3 - Execute Insert Reseller to Database
-        let insertExecutionResult = await insertExecution(request);
+        let insertExecutionResult = await insertExecution(request, specificValidationResult.data_config_balance_bonus);
         if (insertExecutionResult.status_code != 201) {
             throw insertExecutionResult;
         }
@@ -102,8 +102,45 @@ const specificValidation = async (request) => {
             throw errorJSON
         }
 
+        query = "select cbb.id configuration_balance_bonus_id, cbb.amount configuration_balance_bonus_amount, cbb.minimum_amount_sales_order\n" +
+        " from " + process.env.DB_DATABASE_DITOKOKU + ".configuration_balance_bonus cbb\n" +
+        " where cbb.deleted_datetime is null " ;
+        const resultCheckExistConfigBalanceBonus = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
+
+        if (resultCheckExistConfigBalanceBonus.length === 0) {
+            const errorTitle = () => {
+                switch (process.env.APP_LANGUAGE) {
+                    case `INDONESIA` :
+                        return `Data Konfigurasi Saldo Bonus`;
+                        break;
+                    default :
+                        return `Data Konfigurasi Saldo Bonus`;
+                        break;
+                }
+            }
+            const errorMessage = () => {
+                switch (process.env.APP_LANGUAGE) {
+                    case `INDONESIA` :
+                        return `Data Konfigurasi Saldo Bonus belum tersedia di dalam system, sehingga penambahan [Reseller] tidak bisa di proses lebih lanjut.`;
+                        break;
+                    default :
+                        return `Bonus Balance Configuration Data is not available in the system, so adding [Reseller] cannot be processed further.`;
+                        break;
+                }
+            }
+            const errorJSON = {
+                status_code: 400,
+                timestamp: new Date().toISOString(),
+                error_title: errorTitle(),
+                error_message: errorMessage(),
+                path: request.protocol + '://' + request.get('host') + request.originalUrl
+            }
+            throw errorJSON
+        }
+
         const resultJSON = {
-            status_code: 200
+            status_code: 200,
+            data_config_balance_bonus: resultCheckExistConfigBalanceBonus[0]
         }
 
         return resultJSON;
@@ -125,7 +162,7 @@ const specificValidation = async (request) => {
     }
 }
 
-const insertExecution = async (request) => {
+const insertExecution = async (request, dataConfigBalanceBonus) => {
     try {
         /*
         1 - Insert Data Reseller ke Database
@@ -162,6 +199,26 @@ const insertExecution = async (request) => {
 
                 newId = insertResult[0]
 
+                query = `
+                Insert into ${process.env.DB_DATABASE_DITOKOKU}.reseller_balances(amount, reseller_id, reseller_balance_type_id, created_datetime, created_user_id, last_updated_datetime, last_updated_user_id)
+                values(
+                    ${dataConfigBalanceBonus.configuration_balance_bonus_amount},
+                    ${newId},
+                    1,
+                    localtimestamp,
+                    ${(request.body["responsible_user_id"]==null?1:request.body["responsible_user_id"])},
+                    localtimestamp,
+                    ${(request.body["responsible_user_id"]==null?1:request.body["responsible_user_id"])}
+                )
+                `;
+
+                await ditokokuSequelize.query(query,
+                    {
+                        type: QueryTypes.INSERT,
+                        transaction,
+                        raw: true
+                    },);
+
             } catch (error) {
                 console.log(error)
                 const errorJSON ={
@@ -177,12 +234,14 @@ const insertExecution = async (request) => {
         });
 
         //2 - Ambil data lengkap dari Reseller yang sudah berhasil di simpan ke dalam database
-        query = "select resellers.id reseller_id, resellers.username reseller_username, resellers.full_name reseller_full_name, resellers.phone_number reseller_phone_number, genders.id as gender_id, genders.name as gender_name\n" +
+        query = "select resellers.id reseller_id, resellers.username reseller_username, resellers.full_name reseller_full_name, resellers.phone_number reseller_phone_number, resellers.image_filename reseller_image_filename, genders.id as gender_id, genders.name as gender_name, ifnull(balance_bonus.amount, 0) balance_bonus_amount, ifnull(balance_regular.amount, 0) balance_regular_amount\n" +
             "    , date_format(resellers.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
             "    , date_format(resellers.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
             "    , date_format(resellers.deleted_datetime,'%Y-%m-%d %H:%i:%s') deleted_datetime\n" +
             " from " + process.env.DB_DATABASE_DITOKOKU + ".resellers\n" +
             " left join " + process.env.DB_DATABASE_DITOKOKU + ".genders on resellers.gender_id = genders.id\n" +
+            " left join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_balances balance_bonus on balance_bonus.reseller_id = resellers.id and balance_bonus.reseller_balance_type_id=1\n" +
+            " left join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_balances balance_regular on balance_regular.reseller_id = resellers.id and balance_regular.reseller_balance_type_id=2\n" +
             " where resellers.deleted_datetime is null and resellers.id = " + newId +
             ";";
 

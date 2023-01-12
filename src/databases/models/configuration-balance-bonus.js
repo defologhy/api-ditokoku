@@ -6,7 +6,8 @@ const ConfigurationBalanceBonus = ditokokuSequelize.define('ConfigurationBalance
     id: {
         type: DataTypes.INTEGER,
         allowNull:false,
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true
     },
     amount: {
         type: DataTypes.DECIMAL(20, 2),

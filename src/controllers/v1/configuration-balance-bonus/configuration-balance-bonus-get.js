@@ -2,7 +2,7 @@ import {QueryTypes} from "sequelize";
 import ditokokuSequelize from '../../../databases/connections/ditokoku-sequelize';
 import { format, utcToZonedTime } from "date-fns-tz";
 
-const resellersGet = async(request, response) =>{
+const configurationBalanceBonusGet = async(request, response) =>{
     /*
     1 - Config filterCondition
     2 - Config sortCondition
@@ -28,57 +28,9 @@ const resellersGet = async(request, response) =>{
         if(request.query.filter!=null){
             const filterOriginal = JSON.parse(request.query.filter);
 
-            if (filterOriginal.reseller_id != null) {
-                filterCondition = filterCondition + " and resellers.id in ( " + filterOriginal.reseller_id + " )";
-                filters.push("reseller_id in ( " + filterOriginal.reseller_id + " )");
-            }
-
-            if (filterOriginal.reseller_full_name != null) {
-                filterCondition = filterCondition + " and ( "
-                for (let counter = 0; counter < filterOriginal.reseller_full_name.length; counter++) {
-                    if (counter > 0) {
-                        filterCondition = filterCondition + " or "
-                    }
-                    filterCondition = filterCondition + " resellers.full_name like '%" + filterOriginal.reseller_full_name[counter] + "%' ";
-                }
-                filterCondition = filterCondition + " ) ";
-                filters.push("reseller_full_name in ( " + filterOriginal.reseller_full_name + " )");
-            }
-
-            if (filterOriginal.reseller_username != null) {
-                filterCondition = filterCondition + " and ( "
-                for (let counter = 0; counter < filterOriginal.reseller_username.length; counter++) {
-                    if (counter > 0) {
-                        filterCondition = filterCondition + " or "
-                    }
-                    filterCondition = filterCondition + " resellers.username like '%" + filterOriginal.reseller_username[counter] + "%' ";
-                }
-                filterCondition = filterCondition + " ) ";
-                filters.push("reseller_username in ( " + filterOriginal.reseller_username + " )");
-            }
-
-            if (filterOriginal.reseller_phone_number != null) {
-                filterCondition = filterCondition + " and ( "
-                for (let counter = 0; counter < filterOriginal.reseller_phone_number.length; counter++) {
-                    if (counter > 0) {
-                        filterCondition = filterCondition + " or "
-                    }
-                    filterCondition = filterCondition + " resellers.phone_number like '%" + filterOriginal.reseller_phone_number[counter] + "%' ";
-                }
-                filterCondition = filterCondition + " ) ";
-                filters.push("reseller_phone_number in ( " + filterOriginal.reseller_phone_number + " )");
-            }
-
-            if (filterOriginal.gender_name != null) {
-                filterCondition = filterCondition + " and ( "
-                for (let counter = 0; counter < filterOriginal.gender_name.length; counter++) {
-                    if (counter > 0) {
-                        filterCondition = filterCondition + " or "
-                    }
-                    filterCondition = filterCondition + " genders.name like '%" + filterOriginal.gender_name[counter] + "%' ";
-                }
-                filterCondition = filterCondition + " ) ";
-                filters.push("gender_name in ( " + filterOriginal.gender_name + " )");
+            if (filterOriginal.configuration_balance_bonus_id != null) {
+                filterCondition = filterCondition + " and cbb.id in ( " + filterOriginal.configuration_balance_bonus_id + " )";
+                filters.push("configuration_balance_bonus_id in ( " + filterOriginal.configuration_balance_bonus_id + " )");
             }
 
         }
@@ -89,8 +41,8 @@ const resellersGet = async(request, response) =>{
             sorts.push(request.query.sort_by);
         } else {
             //default sort Condition if empty
-            sortCondition = sortCondition + " order by resellers.full_name ";
-            sorts.push("reseller_full_name");
+            sortCondition = sortCondition + " order by cbb.id ";
+            sorts.push("configuration_balance_bonus_id");
         }
 
         //2.2.3 Set Pagination Condition
@@ -140,32 +92,28 @@ const resellersGet = async(request, response) =>{
         }
 
         //5 - Pengambilan total record
-        const queryCount = "select count(resellers.id) record_counts\n" +
-            " from " + process.env.DB_DATABASE_DITOKOKU + ".resellers\n" +
-            " left join " + process.env.DB_DATABASE_DITOKOKU + ".genders on resellers.gender_id = genders.id\n" +
-            " where resellers.deleted_datetime is null\n" +
+        const queryCount = "select count(cbb.id) record_counts\n" +
+            " from " + process.env.DB_DATABASE_DITOKOKU + ".configuration_balance_bonus cbb\n" +
+            " where cbb.deleted_datetime is null\n" +
             filterCondition +
             ";"
         const recordCounts = await ditokokuSequelize.query(queryCount,{ type: QueryTypes.SELECT });
         pagination.total_records = recordCounts[0].record_counts;
 
         //6 - Ambil data dari database
-        const query = "select resellers.id reseller_id, resellers.username reseller_username, resellers.full_name reseller_full_name, resellers.phone_number reseller_phone_number, resellers.image_filename reseller_image_filename, genders.id as gender_id, genders.name as gender_name, ifnull(balance_bonus.amount, 0) balance_bonus_amount, ifnull(balance_regular.amount, 0) balance_regular_amount\n" +
-            "    , date_format(resellers.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
-            "    , date_format(resellers.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
-            "    , date_format(resellers.deleted_datetime,'%Y-%m-%d %H:%i:%s') deleted_datetime\n" +
-            " from " + process.env.DB_DATABASE_DITOKOKU + ".resellers\n" +
-            " left join " + process.env.DB_DATABASE_DITOKOKU + ".genders on resellers.gender_id = genders.id\n" +
-            " left join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_balances balance_bonus on balance_bonus.reseller_id = resellers.id and balance_bonus.reseller_balance_type_id=1\n" +
-            " left join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_balances balance_regular on balance_regular.reseller_id = resellers.id and balance_regular.reseller_balance_type_id=2\n" +
-            " where resellers.deleted_datetime is null " +
+        const query = "select cbb.id configuration_balance_bonus_id, cbb.amount configuration_balance_bonus_amount, cbb.minimum_amount_sales_order\n" +
+            "    , date_format(cbb.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
+            "    , date_format(cbb.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
+            "    , date_format(cbb.deleted_datetime,'%Y-%m-%d %H:%i:%s') deleted_datetime\n" +
+            " from " + process.env.DB_DATABASE_DITOKOKU + ".configuration_balance_bonus cbb\n" +
+            " where cbb.deleted_datetime is null " +
             (filterCondition!=null?filterCondition:'') +
             (sortCondition!=null?sortCondition:'') +
             (paginationConditionLimit!=null?paginationConditionLimit:'') +
             (paginationConditionOffSet!=null?paginationConditionOffSet:'') +
             ";" ;
 
-        const resellers = await ditokokuSequelize.query(query,{ type: QueryTypes.SELECT });
+        const configurationBalanceBonus = await ditokokuSequelize.query(query,{ type: QueryTypes.SELECT });
 
         //7 - Isi data ke dalam Response
         if (request.query.page_size === null && (request.query.all_data === true || request.query.all_data === 'true' || request.query.all_data === '1' || request.query.all_data === 1)) {
@@ -189,7 +137,7 @@ const resellersGet = async(request, response) =>{
                 , "page_size": pagination.page_size
                 , "total_records": pagination.total_records
             }
-            , "data" : resellers
+            , "data" : configurationBalanceBonus
         }
 
         return response.status(200).send(resultResponse);
@@ -212,4 +160,4 @@ const resellersGet = async(request, response) =>{
     }
 }
 
-export { resellersGet as default}
+export { configurationBalanceBonusGet as default}
