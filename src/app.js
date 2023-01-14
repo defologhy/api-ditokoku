@@ -5,6 +5,8 @@ import resellersRoutesV1 from "./routes/v1/resellers";
 import gendersRoutesV1 from "./routes/v1/genders";
 import commonRoutesV1 from "./routes/commons";
 import configurationBalanceBonusRoutesV1 from './routes/v1/configuration-balance-bonus';
+import bannersRoutesV1 from './routes/v1/banners';
+import adminsRoutesV1 from './routes/v1/admins';
 
 import databaseSynchronize from "./databases/database-synchronize";
 
@@ -64,7 +66,9 @@ app.use("/api/v1/resellers", resellersRoutesV1);
 app.use("/api/v1/genders", gendersRoutesV1);
 app.use("/api/v1/common", commonRoutesV1);
 app.use("/api/v1/configuration-balance-bonus", configurationBalanceBonusRoutesV1);
+app.use("/api/v1/banners", bannersRoutesV1);
+app.use("/api/v1/admins", adminsRoutesV1);
 
-databaseSynchronize();
+// databaseSynchronize();
 
 export { app as default }

@@ -3,26 +3,26 @@ import ditokokuSequelize from '../../../databases/connections/ditokoku-sequelize
 import jsonContentValidation from "../../validations/json-content-validation"
 import {format, utcToZonedTime} from "date-fns-tz";
 
-const resellersDelete = async(request, response) =>{
+const adminsDelete = async(request, response) =>{
     try{
         /*
         1 - Validate JSON Format Content
-        2 - Pengecekan khusus untuk Reseller (pengecekan apakah data sudah pernah terdaftar di database)
-        3 - Execute Delete Reseller to Database
+        2 - Pengecekan khusus untuk admin (pengecekan apakah data sudah pernah terdaftar di database)
+        3 - Execute Delete admin to Database
          */
         //1 - Validate JSON Format Content
-        let jsonContentValidationResult = await jsonContentValidation(request.body, ["reseller_id"],["reseller_id"]);
+        let jsonContentValidationResult = await jsonContentValidation(request.body, ["admin_id"],["admin_id"]);
         if(jsonContentValidationResult.status_code !=  200){
             throw jsonContentValidationResult;
         }
 
-        //2 - Pengecekan khusus untuk Reseller (pengecekan apakah data tersedia di database)
+        //2 - Pengecekan khusus untuk admin (pengecekan apakah data tersedia di database)
         let specificValidationResult = await specificValidation(request);
         if(specificValidationResult.status_code !=  200){
             throw specificValidationResult;
         }
 
-        //3 - Execute Delete Reseller to Database
+        //3 - Execute Delete admin to Database
         let deleteExecutionResult = await deleteExecution(request);
         if(deleteExecutionResult.status_code !=  200){
             throw deleteExecutionResult;
@@ -54,27 +54,27 @@ const resellersDelete = async(request, response) =>{
 const specificValidation = async(request) =>{
     try{
         /*
-        1. Periksa apakah Reseller ID Tersedia Di Database
+        1. Periksa apakah admin ID Tersedia Di Database
          */
         let query = "";
         let resultCheckExist= [];
 
-        // 1. Periksa apakah Reseller ID Tersedia Di Database
-        query = " select resellers.id\n" +
-            " from "+process.env.DB_DATABASE_DITOKOKU+".resellers\n" +
-            " where resellers.deleted_datetime is null and resellers.id = '" + request.body["reseller_id"].toString() + "' \n" +
+        // 1. Periksa apakah admin ID Tersedia Di Database
+        query = " select admins.id\n" +
+            " from "+process.env.DB_DATABASE_DITOKOKU+".admins\n" +
+            " where admins.deleted_datetime is null and admins.id = '" + request.body["admin_id"] + "' \n" +
             ";"
         resultCheckExist = await ditokokuSequelize.query(query,{ type: QueryTypes.SELECT });
 
         if(resultCheckExist.length == 0){
             const errorTitle = ()=>{switch(process.env.APP_LANGUAGE){
-                case "INDONESIA" : return "Data Reseller tidak terdaftar"; break;
-                default : return "Reseller Data doesnt exist"; break;
+                case "INDONESIA" : return "Data admin tidak terdaftar"; break;
+                default : return "admin Data doesnt exist"; break;
             }}
             const errorMessage = ()=>{switch(process.env.APP_LANGUAGE){
-                case "INDONESIA" : return "Reseller dengan id [" + request.body["reseller_id"].toString() +
-                    "] tidak terdaftar di dalam system, sehingga hapus data [Reseller] tidak bisa di proses lebih lanjut."; break;
-                default : return "[Reseller] deleted could not be processed because the Reseller doesnt exist before this request."; break;
+                case "INDONESIA" : return "admin dengan id [" + request.body["admin_id"] +
+                    "] tidak terdaftar di dalam system, sehingga hapus data [admin] tidak bisa di proses lebih lanjut."; break;
+                default : return "[admin] deleted could not be processed because the admin doesnt exist before this request."; break;
             }}
             const errorJSON ={
                 status_code: 400,
@@ -112,20 +112,20 @@ const specificValidation = async(request) =>{
 const deleteExecution = async(request) =>{
     try{
         /*
-        1 - Delete Data Reseller dari Database
-        2 - Ambil data lengkap dari Reseller yang sudah berhasil di Delete
+        1 - Delete Data admin dari Database
+        2 - Ambil data lengkap dari admin yang sudah berhasil di Delete
          */
 
-        //1 - Delete Data Reseller ke Database
+        //1 - Delete Data admin ke Database
         let query = "";
         await ditokokuSequelize.transaction(async transaction => {
             try {
 
-                //Delete Data Reseller To Database
-                query = "update " + process.env.DB_DATABASE_DITOKOKU + ".resellers set\n" +
+                //Delete Data admin To Database
+                query = "update " + process.env.DB_DATABASE_DITOKOKU + ".admins set\n" +
                         "deleted_datetime=localtimestamp ,"+
                         "deleted_user_id="+request.body["responsible_user_id"]+" "+
-                        "where id="+request.body["reseller_id"]+";"
+                        "where id="+request.body["admin_id"]+";"
 
                     await ditokokuSequelize.query(query,
                         {
@@ -147,20 +147,18 @@ const deleteExecution = async(request) =>{
             };
         });
 
-        //2 - Ambil data lengkap dari Reseller yang sudah berhasil di Delete
-        query = "select resellers.id reseller_id, resellers.username reseller_username, resellers.full_name reseller_full_name, resellers.phone_number reseller_phone_number, resellers.image_filename reseller_image_filename, genders.id as gender_id, genders.name as gender_name, ifnull(balance_bonus.amount, 0) balance_bonus_amount, ifnull(balance_regular.amount, 0) balance_regular_amount\n" +
-            "    , date_format(resellers.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
-            "    , date_format(resellers.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
-            " from " + process.env.DB_DATABASE_DITOKOKU + ".resellers\n" +
-            " left join " + process.env.DB_DATABASE_DITOKOKU + ".genders on resellers.gender_id = genders.id\n" +
-            " left join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_balances balance_bonus on balance_bonus.reseller_id = resellers.id and balance_bonus.reseller_balance_type_id=1\n" +
-            " left join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_balances balance_regular on balance_regular.reseller_id = resellers.id and balance_regular.reseller_balance_type_id=2\n" +
-            " where resellers.id = " + request.body['reseller_id'] +
-            ";";
+        //2 - Ambil data lengkap dari admin yang sudah berhasil di Delete
+        query = "select admins.id admin_id, admins.username admin_username, admins.full_name admin_full_name\n" +
+                "    , date_format(admins.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
+                "    , date_format(admins.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
+                "    , date_format(admins.deleted_datetime,'%Y-%m-%d %H:%i:%s') deleted_datetime\n" +
+                " from " + process.env.DB_DATABASE_DITOKOKU + ".admins\n" +
+                " where admins.id = " + request.body["admin_id"] +
+                ";";
 
-        const reseller = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
+        const admin = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
 
-        let resultJSON = JSON.parse(JSON.stringify(reseller));
+        let resultJSON = JSON.parse(JSON.stringify(admin));
         resultJSON[0].status_code = 200;
         return resultJSON[0];
         
@@ -181,4 +179,4 @@ const deleteExecution = async(request) =>{
     }
 }
 
-export { resellersDelete as default}
+export { adminsDelete as default}

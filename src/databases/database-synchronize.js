@@ -4,6 +4,8 @@ import Genders from './models/genders';
 import ConfigurationBalanceBonus from './models/configuration-balance-bonus';
 import ResellerBalances from './models/reseller-balances';
 import ResellerBalanceTypes from './models/reseller-balance-types';
+import Banners from './models/banners';
+import Admins from './models/admins';
 
 const databaseSynchronize = async()=> {
     try {
@@ -28,6 +30,12 @@ const databaseSynchronize = async()=> {
 
             await ResellerBalances.sync({ alter:true });
             console.log('reselller_balances synchronize successfully.');
+
+            await Banners.sync({ alter:true });
+            console.log('banners synchronize successfully.');
+
+            await Admins.sync({ alter:true });
+            console.log('admins synchronize successfully.');
 
 
         } catch (error) {
