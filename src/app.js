@@ -23,8 +23,8 @@ app.use(express.json());
 app.use(function (req, res, next) {
 
     // Website you wish to allow to connect
-    const allowedOrigins = ['http://localhost:3001', 'http://localhost:3002'];
-    // const allowedOrigins = ['https://ditokoku.vercel.app/', 'https://admin-ditokoku.vercel.app/'];
+    // const allowedOrigins = ['http://localhost:3001', 'http://localhost:3002'];
+    const allowedOrigins = ['https://ditokoku.vercel.app', 'https://admin-ditokoku.vercel.app'];
     const origin = req.headers.origin;
     if(allowedOrigins.indexOf(origin) > -1){
         res.setHeader('Access-Control-Allow-Origin', origin);
