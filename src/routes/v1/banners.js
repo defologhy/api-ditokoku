@@ -19,7 +19,6 @@ router.patch("/", async (request, response) => {
 })
 
 router.post("/upload-image", multer({ storage: diskStorage }).single("file"), async (request, response) => {
-    response.setHeader('Access-Control-Allow-Origin', '*');
     return bannersUploadImage(request, response);
 })
 

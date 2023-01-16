@@ -15,51 +15,47 @@ const app = express();
 
 app.use(express.json());
 
-// use it before all route definitions
-// const cors = require('cors');
-// app.use(cors({origin: '*'}));
-
 // Add headers
-app.use(function (req, res, next) {
+// app.use(function (req, res, next) {
 
-    // Website you wish to allow to connect
-    // const allowedOrigins = ['http://localhost:3001', 'http://localhost:3002'];
-    // const allowedOrigins = ['https://ditokoku.vercel.app/', 'https://admin-ditokoku.vercel.app/'];
-    const origin = req.headers.origin;
-    // if(allowedOrigins.indexOf(origin) > -1){
-        res.setHeader('Access-Control-Allow-Origin', 'https://admin-ditokoku.vercel.app');
-    // }
+//     // Website you wish to allow to connect
+//     // const allowedOrigins = ['http://localhost:3001', 'http://localhost:3002'];
+//     const allowedOrigins = ['https://ditokoku.vercel.app/', 'https://admin-ditokoku.vercel.app/'];
+//     const origin = req.headers.origin;
+//     if(allowedOrigins.indexOf(origin) > -1){
+//         res.setHeader('Access-Control-Allow-Origin', origin);
+//     }
 
-    // Request methods you wish to allow
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+//     // Request methods you wish to allow
+//     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
-    // Request headers you wish to allow
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+//     // Request headers you wish to allow
+//     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
 
-    // Set to true if you need the website to include cookies in the requests sent
-    // to the API (e.g. in case you use sessions)
-    res.setHeader('Access-Control-Allow-Credentials', true);
+//     // Set to true if you need the website to include cookies in the requests sent
+//     // to the API (e.g. in case you use sessions)
+//     res.setHeader('Access-Control-Allow-Credentials', true);
 
-    // Pass to next layer of middleware
-    next();
-});
+//     // Pass to next layer of middleware
+//     next();
+// });
 
 //Cors Configuration - Start
-// app.use((req, res, next) => {
-//     res.header("Access-Control-Allow-Origin", "*")
-//     res.header(
-//         "Access-Control-Allow-Headers",
-//         "X-Requested-With, content-type"
-//     )
-//     if (req.method === "OPTIONS") {
-//         res.header(
-//             "Access-Control-Allow-Methods",
-//             "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-//         )
-//         return res.status(200).json({})
-//     }
-//     next()
-// })
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*")
+    res.header(
+        "Access-Control-Allow-Headers",
+        "X-Requested-With, content-type"
+    )
+    if (req.method === "OPTIONS") {
+        res.header(
+            "Access-Control-Allow-Methods",
+            "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+        )
+        return res.status(200).json({})
+    }
+    next()
+})
 //Cors Configuration - End
 
 app.use(compression()); //Compress all routes
