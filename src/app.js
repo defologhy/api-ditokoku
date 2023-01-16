@@ -26,9 +26,9 @@ app.use(function (req, res, next) {
     // const allowedOrigins = ['http://localhost:3001', 'http://localhost:3002'];
     // const allowedOrigins = ['https://ditokoku.vercel.app/', 'https://admin-ditokoku.vercel.app/'];
     const origin = req.headers.origin;
-    if(allowedOrigins.indexOf(origin) > -1){
+    // if(allowedOrigins.indexOf(origin) > -1){
         res.setHeader('Access-Control-Allow-Origin', 'https://admin-ditokoku.vercel.app');
-    }
+    // }
 
     // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
