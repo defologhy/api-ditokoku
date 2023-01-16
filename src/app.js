@@ -15,6 +15,10 @@ const app = express();
 
 app.use(express.json());
 
+// use it before all route definitions
+const cors = require('cors');
+app.use(cors({origin: '*'}));
+
 // Add headers
 // app.use(function (req, res, next) {
 
@@ -41,21 +45,21 @@ app.use(express.json());
 // });
 
 //Cors Configuration - Start
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*")
-    res.header(
-        "Access-Control-Allow-Headers",
-        "X-Requested-With, content-type"
-    )
-    if (req.method === "OPTIONS") {
-        res.header(
-            "Access-Control-Allow-Methods",
-            "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-        )
-        return res.status(200).json({})
-    }
-    next()
-})
+// app.use((req, res, next) => {
+//     res.header("Access-Control-Allow-Origin", "*")
+//     res.header(
+//         "Access-Control-Allow-Headers",
+//         "X-Requested-With, content-type"
+//     )
+//     if (req.method === "OPTIONS") {
+//         res.header(
+//             "Access-Control-Allow-Methods",
+//             "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+//         )
+//         return res.status(200).json({})
+//     }
+//     next()
+// })
 //Cors Configuration - End
 
 app.use(compression()); //Compress all routes
@@ -71,6 +75,6 @@ app.use("/api/v1/banners", bannersRoutesV1);
 app.use("/api/v1/admins", adminsRoutesV1);
 app.use("/api/v1/category-products", categoryProductsRoutesV1);
 
-// databaseSynchronize();
+databaseSynchronize();
 
 export { app as default }
