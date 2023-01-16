@@ -6,6 +6,7 @@ import ResellerBalances from './models/reseller-balances';
 import ResellerBalanceTypes from './models/reseller-balance-types';
 import Banners from './models/banners';
 import Admins from './models/admins';
+import CategoryProducts from './models/category-products';
 
 const databaseSynchronize = async()=> {
     try {
@@ -37,6 +38,8 @@ const databaseSynchronize = async()=> {
             await Admins.sync({ alter:true });
             console.log('admins synchronize successfully.');
 
+            await CategoryProducts.sync({ alter:true });
+            console.log('category_products synchronize successfully.');
 
         } catch (error) {
             console.error('database synchronization failed: ', error);

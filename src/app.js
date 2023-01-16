@@ -7,6 +7,7 @@ import commonRoutesV1 from "./routes/commons";
 import configurationBalanceBonusRoutesV1 from './routes/v1/configuration-balance-bonus';
 import bannersRoutesV1 from './routes/v1/banners';
 import adminsRoutesV1 from './routes/v1/admins';
+import categoryProductsRoutesV1 from './routes/v1/category-products'
 
 import databaseSynchronize from "./databases/database-synchronize";
 
@@ -68,6 +69,7 @@ app.use("/api/v1/common", commonRoutesV1);
 app.use("/api/v1/configuration-balance-bonus", configurationBalanceBonusRoutesV1);
 app.use("/api/v1/banners", bannersRoutesV1);
 app.use("/api/v1/admins", adminsRoutesV1);
+app.use("/api/v1/category-products", categoryProductsRoutesV1);
 
 // databaseSynchronize();
 
