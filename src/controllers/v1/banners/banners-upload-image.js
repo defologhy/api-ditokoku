@@ -24,13 +24,13 @@ const bannersUploadImage = async (request, response) => {
                 const bannerImageData = await ditokokuSequelize.query(query, {transaction, type: QueryTypes.SELECT});
 
                 if(bannerImageData[0].filename!=='default.png'){
-                    unlink(__dirname + '../../../../../public/assets/images/banner/' + bannerImageData[0].filename, (err) => {
+                    unlink('public/assets/images/banner/' + bannerImageData[0].filename, (err) => {
                         if (err) throw err;
                         console.log('file before was deleted');
                     });
                 }
 
-                const newpath = __dirname + "../../../../../public/assets/images/banner/"+ request.body['file_name'];
+                const newpath = "public/assets/images/banner/"+ request.body['file_name'];
                 const file = request.files.file;
                 
                 file.mv(`${newpath}`, (err) => {
