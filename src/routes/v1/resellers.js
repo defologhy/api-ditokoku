@@ -32,7 +32,7 @@ router.post("/sign-in", async (request, response) => {
     return resellersSignin(request, response);
 })
 
-router.post("/upload-profile", multer({ storage: diskStorage }).single("file"), async (request, response) => {
+router.post("/upload-profile", async (request, response) => {
     return resellersUploadProfile(request, response);
 })
 
