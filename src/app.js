@@ -12,6 +12,14 @@ import categoryProductsRoutesV1 from './routes/v1/category-products'
 import databaseSynchronize from "./databases/database-synchronize";
 
 const app = express();
+const cors = require('cors')
+const corsOptions = {
+    origin: true,
+    credentials: true,
+    maxAge: 3600,
+  };
+  
+  app.use(cors(corsOptions))
 
 app.use(express.json());
 
@@ -41,21 +49,21 @@ app.use(express.json());
 // });
 
 //Cors Configuration - Start
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*")
-    res.header(
-        "Access-Control-Allow-Headers",
-        "X-Requested-With, content-type"
-    )
-    if (req.method === "OPTIONS") {
-        res.header(
-            "Access-Control-Allow-Methods",
-            "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-        )
-        return res.status(200).json({})
-    }
-    next()
-})
+// app.use((req, res, next) => {
+//     res.header("Access-Control-Allow-Origin", "*")
+//     res.header(
+//         "Access-Control-Allow-Headers",
+//         "X-Requested-With, content-type"
+//     )
+//     if (req.method === "OPTIONS") {
+//         res.header(
+//             "Access-Control-Allow-Methods",
+//             "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+//         )
+//         return res.status(200).json({})
+//     }
+//     next()
+// })
 //Cors Configuration - End
 
 app.use(compression()); //Compress all routes
