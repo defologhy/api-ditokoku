@@ -18,19 +18,7 @@ router.patch("/", async (request, response) => {
     return bannersUpdate(request, response);
 })
 
-router.post("/upload-image", multer({ storage: diskStorage }).single("file"), async (request, response) => {
-    response.header("Access-Control-Allow-Origin", "*")
-    response.header(
-        "Access-Control-Allow-Headers",
-        "Origin, X-Requested, Content-Type, Accept Authorization"
-    )
-    if (request.method === "OPTIONS") {
-        response.header(
-            "Access-Control-Allow-Methods",
-            "POST"
-        )
-        return response.status(200).json({})
-    }
+router.post("/upload-image", async (request, response) => {
     return bannersUploadImage(request, response);
 })
 

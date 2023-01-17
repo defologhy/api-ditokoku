@@ -13,13 +13,16 @@ import databaseSynchronize from "./databases/database-synchronize";
 
 const app = express();
 const cors = require('cors')
-const corsOptions = {
-    origin: true,
-    credentials: true,
-    maxAge: 3600,
-  };
-  
-  app.use(cors(corsOptions))
+
+  app.use(cors())
+
+const fileupload = require("express-fileupload");
+const bodyParser = require('body-parser');
+ 
+ 
+app.use(fileupload());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.json());
 
