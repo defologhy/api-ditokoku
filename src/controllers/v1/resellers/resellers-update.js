@@ -212,10 +212,10 @@ const updateExecution = async(request, data) =>{
                 ";";
 
                 resellerData = await ditokokuSequelize.query(queryGetReseller, {transaction, type: QueryTypes.SELECT});
-
+                
                 if(Object.values(resellerData).includes(null) === false){
 
-                    if(resellerData.balance_bonus_amount === null){
+                    if(parseInt(resellerData[0].balance_bonus_amount) === 0){
 
                         query = "select cbb.id configuration_balance_bonus_id, cbb.amount configuration_balance_bonus_amount, cbb.minimum_amount_sales_order\n" +
                         " from " + process.env.DB_DATABASE_DITOKOKU + ".configuration_balance_bonus cbb\n" +
