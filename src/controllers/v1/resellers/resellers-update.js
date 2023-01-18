@@ -215,30 +215,34 @@ const updateExecution = async(request, data) =>{
 
                 if(Object.values(resellerData).includes(null) === false){
 
-                    query = "select cbb.id configuration_balance_bonus_id, cbb.amount configuration_balance_bonus_amount, cbb.minimum_amount_sales_order\n" +
-                    " from " + process.env.DB_DATABASE_DITOKOKU + ".configuration_balance_bonus cbb\n" +
-                    " where cbb.deleted_datetime is null " ;
-                    const resultCheckExistConfigBalanceBonus = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
-                    
-                    query = `
-                    Insert into ${process.env.DB_DATABASE_DITOKOKU}.reseller_balances(amount, reseller_id, reseller_balance_type_id, created_datetime, created_user_id, last_updated_datetime, last_updated_user_id)
-                    values(
-                        ${resultCheckExistConfigBalanceBonus[0].configuration_balance_bonus_amount},
-                        ${request.body['reseller_id']},
-                        1,
-                        localtimestamp,
-                        ${(request.body["responsible_user_id"]==null?1:request.body["responsible_user_id"])},
-                        localtimestamp,
-                        ${(request.body["responsible_user_id"]==null?1:request.body["responsible_user_id"])}
-                    )
-                    `;
+                    if(resellerData.balance_bonus_amount === 0){
 
-                    await ditokokuSequelize.query(query,
-                        {
-                            type: QueryTypes.INSERT,
-                            transaction,
-                            raw: true
-                        },);
+                        query = "select cbb.id configuration_balance_bonus_id, cbb.amount configuration_balance_bonus_amount, cbb.minimum_amount_sales_order\n" +
+                        " from " + process.env.DB_DATABASE_DITOKOKU + ".configuration_balance_bonus cbb\n" +
+                        " where cbb.deleted_datetime is null " ;
+                        const resultCheckExistConfigBalanceBonus = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
+                        
+                        query = `
+                        Insert into ${process.env.DB_DATABASE_DITOKOKU}.reseller_balances(amount, reseller_id, reseller_balance_type_id, created_datetime, created_user_id, last_updated_datetime, last_updated_user_id)
+                        values(
+                            ${resultCheckExistConfigBalanceBonus[0].configuration_balance_bonus_amount},
+                            ${request.body['reseller_id']},
+                            1,
+                            localtimestamp,
+                            ${(request.body["responsible_user_id"]==null?1:request.body["responsible_user_id"])},
+                            localtimestamp,
+                            ${(request.body["responsible_user_id"]==null?1:request.body["responsible_user_id"])}
+                        )
+                        `;
+
+                        await ditokokuSequelize.query(query,
+                            {
+                                type: QueryTypes.INSERT,
+                                transaction,
+                                raw: true
+                            },);
+
+                    }
             
                 }
 
