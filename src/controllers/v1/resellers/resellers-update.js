@@ -215,7 +215,7 @@ const updateExecution = async(request, data) =>{
 
                 if(Object.values(resellerData).includes(null) === false){
 
-                    if(resellerData.balance_bonus_amount === 0){
+                    if(resellerData.balance_bonus_amount === null){
 
                         query = "select cbb.id configuration_balance_bonus_id, cbb.amount configuration_balance_bonus_amount, cbb.minimum_amount_sales_order\n" +
                         " from " + process.env.DB_DATABASE_DITOKOKU + ".configuration_balance_bonus cbb\n" +
