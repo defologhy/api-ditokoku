@@ -10,11 +10,11 @@ const ConfigurationBalanceBonus = ditokokuSequelize.define('ConfigurationBalance
         autoIncrement: true
     },
     amount: {
-        type: DataTypes.DECIMAL(20, 2),
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     minimum_amount_sales_order: {
-        type: DataTypes.DECIMAL(20, 2),
+        type: DataTypes.INTEGER,
         allowNull: true
     },
     created_datetime: {

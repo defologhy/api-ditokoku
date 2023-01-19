@@ -1,7 +1,7 @@
 import {DataTypes, fn} from 'sequelize';
 import ditokokuSequelize from '../connections/ditokoku-sequelize';
 
-const ResellerBalances = ditokokuSequelize.define('ResellerBalances', {
+const ResellerTopupBalancesRegularProgressStatus = ditokokuSequelize.define('ResellerTopupBalancesRegularProgressStatus', {
     // Model attributes are defined here
     id: {
         type: DataTypes.INTEGER,
@@ -9,17 +9,9 @@ const ResellerBalances = ditokokuSequelize.define('ResellerBalances', {
         primaryKey: true,
         autoIncrement: true
     },
-    amount: {
-        type: DataTypes.INTEGER,
+    name: {
+        type: DataTypes.STRING(50),
         allowNull: false
-    },
-    reseller_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-    },
-    reseller_balance_type_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true
     },
     created_datetime: {
         type: DataTypes.DATE(3),
@@ -48,11 +40,11 @@ const ResellerBalances = ditokokuSequelize.define('ResellerBalances', {
         allowNull: true
     },
 }, {
-    tableName: 'reseller_balances',
+    tableName: 'reseller_topup_balances_regular_progress_status',
     timestamps: false,
     indexes: [
         {
-            name: 'idx_reseller_balances_id',
+            name: 'idx_reseller_topup_balances_regular_progress_status_id',
             unique: true,
             fields: [{
                 attribute: 'id',
@@ -60,23 +52,15 @@ const ResellerBalances = ditokokuSequelize.define('ResellerBalances', {
             }]
         },
         {
-            name: 'idx_reseller_balances_reseller_id',
+            name: 'idx_reseller_topup_balances_regular_progress_status_name',
             unique: false,
             fields: [{
-                attribute: 'reseller_id',
+                attribute: 'name',
                 order: 'ASC'
             }]
         },
         {
-            name: 'idx_reseller_balances_reseller_balance_type_id',
-            unique: false,
-            fields: [{
-                attribute: 'reseller_balance_type_id',
-                order: 'ASC'
-            }]
-        },
-        {
-            name: 'idx_reseller_balances_deleted_datetime',
+            name: 'idx_genders_deleted_datetime',
             unique: false,
             fields: [{
                 attribute: 'deleted_datetime',
@@ -86,4 +70,4 @@ const ResellerBalances = ditokokuSequelize.define('ResellerBalances', {
     ]
 });
 
-export { ResellerBalances as default}
+export { ResellerTopupBalancesRegularProgressStatus as default}

@@ -3,10 +3,7 @@ import ditokokuSequelize from '../../../databases/connections/ditokoku-sequelize
 import jsonContentValidation from "../../validations/json-content-validation"
 import {format, utcToZonedTime} from "date-fns-tz";
 
-const crypto = require('crypto')
-const cryptoSecret = 'alpha'
-
-const resellersUpdate = async(request, response) =>{
+const resellerPaymentAccountsUpdate = async(request, response) =>{
     try{
         /*
         1 - Validate JSON Format Content
@@ -15,7 +12,7 @@ const resellersUpdate = async(request, response) =>{
          */
 
         //1 - Validate JSON Format Content
-        let jsonContentValidationResult = await jsonContentValidation(request.body, ["reseller_id","reseller_username", "reseller_phone_number"], ["reseller_id"], ["reseller_username", "reseller_phone_number"]);
+        let jsonContentValidationResult = await jsonContentValidation(request.body, ["reseller_id", "reseller_payment_account_number", "reseller_payment_account_bank_name", "reseller_payment_account_holder_name", "reseller_payment_account_id"], ["reseller_id", "reseller_payment_account_id"], ["reseller_payment_account_number", "reseller_payment_account_holder_name", "reseller_payment_account_bank_name"]);
         if (jsonContentValidationResult.status_code != 200) {
             throw jsonContentValidationResult;
         }
@@ -71,21 +68,21 @@ const specificValidation = async(request) =>{
         let resultCheckExist= [];
 
         // 1. Periksa apakah reseller ID Tersedia Di Database
-        query = `select resellers.id, resellers.phone_number, resellers.password
-                from ${process.env.DB_DATABASE_DITOKOKU}.resellers
-                where id = '${request.body["reseller_id"]}' and deleted_datetime is null
+        query = `select rpa.id, rpa.bank_name, rpa.holder_name, rpa.number
+                from ${process.env.DB_DATABASE_DITOKOKU}.reseller_payment_accounts rpa
+                where id = '${request.body["reseller_payment_account_id"]}' and deleted_datetime is null
             ;`;
         const resultCheckExistData = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
 
         if(resultCheckExistData.length == 0){
             const errorTitle = ()=>{switch(process.env.APP_LANGUAGE){
-                case "INDONESIA" : return "Data reseller tidak terdaftar"; break;
-                default : return "reseller Data doesnt exist"; break;
+                case "INDONESIA" : return "Data reseller akun bank tidak terdaftar"; break;
+                default : return "reseller akun bank Data doesnt exist"; break;
             }}
             const errorMessage = ()=>{switch(process.env.APP_LANGUAGE){
-                case "INDONESIA" : return "reseller dengan id [" + request.body["reseller_id"] +
-                    "] tidak terdaftar di dalam system, sehingga perubahan [reseller] tidak bisa di proses lebih lanjut."; break;
-                default : return "[reseller] updated could not be processed because the reseller doesnt exist before this request."; break;
+                case "INDONESIA" : return "reseller akun bank dengan id [" + request.body["reseller_payment_account_id"] +
+                    "] tidak terdaftar di dalam system, sehingga perubahan [reseller akun bank] tidak bisa di proses lebih lanjut."; break;
+                default : return "[reseller akun bank] updated could not be processed because the reseller akun bank doesnt exist before this request."; break;
             }}
             const errorJSON ={
                 status_code: 400,
@@ -97,40 +94,41 @@ const specificValidation = async(request) =>{
             throw errorJSON
         }else{
             // 3. Periksa apakah reseller Name Yang Di Masukan Pada Body Sama Dengan Data reseller Name Sebelumnya
-            if(resultCheckExistData[0].phone_number != request.body["reseller_phone_number"].toString()){
+            if(resultCheckExistData[0].number != request.body["reseller_payment_account_number"]){
 
                 // 4. Periksa apakah reseller Name Sudah Terdaftar Di Database
-                query = `select resellers.id, resellers.password 
-                    from ${process.env.DB_DATABASE_DITOKOKU}.resellers
-                    where phone_number = '${request.body["reseller_phone_number"]}'
-                    and deleted_datetime is null
+                //1 - Periksa apakah ada data dari database yang memiliki Reseller Name sama persis dengan yang ingin di insert dan masih berstatus aktif
+                query = `select rpa.id 
+                        from ${process.env.DB_DATABASE_DITOKOKU}.reseller_payment_accounts rpa
+                        where rpa.number = '${request.body["reseller_payment_account_number"]}' and deleted_datetime is null
                     ;`;
                 resultCheckExist = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
+                console.log("resultCheckExist:");console.log(resultCheckExist)
 
                 if (resultCheckExist.length != 0) {
                     const errorTitle = () => {
                         switch (process.env.APP_LANGUAGE) {
                             case `INDONESIA` :
-                                return `Data reseller sudah pernah terdaftar`;
+                                return `Data reseller akun bank sudah pernah terdaftar`;
                                 break;
                             default :
-                                return `reseller Data already exists`;
+                                return `reseller akun bank Data already exists`;
                                 break;
                         }
                     }
                     const errorMessage = () => {
                         switch (process.env.APP_LANGUAGE) {
                             case `INDONESIA` :
-                                return `Reseller dengan nomor handphone [${request.body["reseller_phone_number"]}] sudah pernah terdaftar di dalam system, sehingga penambahan [Reseller] tidak bisa di proses lebih lanjut.`;
+                                return `Reseller akun bank dengan nomor rekening [${request.body["reseller_payment_account_number"]}] sudah pernah terdaftar di dalam system, sehingga penambahan [Reseller akun bank] tidak bisa di proses lebih lanjut.`;
                                 break;
                             default :
-                                return `[Reseller] registration could not be processed because the Reseller already registered to the system before this request.`;
+                                return `[Reseller akun bank] registration could not be processed because the Reseller akun bank already registered to the system before this request.`;
                                 break;
                         }
                     }
                     const errorJSON = {
                         status_code: 400,
-                        timestamp: format(utcToZonedTime(Date.now(),process.env.APP_TIMEZONE), 'yyyy-MM-dd HH:mm:ss.SSS',{timeZone: process.env.APP_TIMEZONE}),
+                        timestamp: new Date().toISOString(),
                         error_title: errorTitle(),
                         error_message: errorMessage(),
                         path: request.protocol + '://' + request.get('host') + request.originalUrl
@@ -140,6 +138,43 @@ const specificValidation = async(request) =>{
 
             }
 
+        }
+
+        query = `select resellers.id 
+                from ${process.env.DB_DATABASE_DITOKOKU}.resellers
+                where resellers.id = '${request.body["reseller_id"]}' and deleted_datetime is null
+            ;`;
+        resultCheckExist = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
+
+        if (resultCheckExist.length === 0) {
+            const errorTitle = () => {
+                switch (process.env.APP_LANGUAGE) {
+                    case `INDONESIA` :
+                        return `Data reseller tidak terdaftar`;
+                        break;
+                    default :
+                        return `reseller Data doesnt exists`;
+                        break;
+                }
+            }
+            const errorMessage = () => {
+                switch (process.env.APP_LANGUAGE) {
+                    case `INDONESIA` :
+                        return `Reseller ID [${request.body["reseller_id"]}] tidak terdaftar di dalam system, sehingga penambahan [Reseller akun bank] tidak bisa di proses lebih lanjut.`;
+                        break;
+                    default :
+                        return `[Reseller akun bank] registration could not be processed because the Reseller already registered to the system before this request.`;
+                        break;
+                }
+            }
+            const errorJSON = {
+                status_code: 400,
+                timestamp: new Date().toISOString(),
+                error_title: errorTitle(),
+                error_message: errorMessage(),
+                path: request.protocol + '://' + request.get('host') + request.originalUrl
+            }
+            throw errorJSON
         }
 
         const resultJSON ={
@@ -166,33 +201,27 @@ const specificValidation = async(request) =>{
     }
 }
 
-const updateExecution = async(request, data) =>{
+const updateExecution = async(request) =>{
     try{
         /*
-        1 - Update Data reseller ke Database
-        2 - Ambil data lengkap dari reseller yang sudah berhasil di simpan ke dalam database
+        1 - Update Data reseller akun bank ke Database
+        2 - Ambil data lengkap dari reseller akun bank yang sudah berhasil di simpan ke dalam database
          */
 
-        //1 - Update Data reseller ke Database
-        let query = "", passwordValue = "", newPassword = (request.body['reseller_password']===null?null:crypto.createHmac('SHA256', cryptoSecret).update(request.body['reseller_password']).digest('base64')), resellerData = {};
+        //1 - Update Data reseller akun bank ke Database
+        let query = ""
         await ditokokuSequelize.transaction(async transaction => {
             try {
-                passwordValue = newPassword===data.password || newPassword === null
-                ?
-                "'"+data.password+"'"
-                :
-                "'"+newPassword+"'"
                 
                 //Update Data resellers To Database
-                query = `update ${process.env.DB_DATABASE_DITOKOKU}.resellers set
-                        username=${(request.body["reseller_username"]==null?"null":"'"+request.body["reseller_username"]+"'")},
-                        full_name=${(request.body["reseller_full_name"]==null?"null":"'"+request.body["reseller_full_name"]+"'")},
-                        phone_number=${(request.body["reseller_phone_number"]==null?"null":"'"+request.body["reseller_phone_number"]+"'")},
-                        password=${passwordValue},
-                        gender_id=${(request.body["reseller_gender_id"]==null?"null":request.body["reseller_gender_id"])},
+                query = `update ${process.env.DB_DATABASE_DITOKOKU}.reseller_payment_accounts set
+                        number=${(request.body["reseller_payment_account_number"]==null?"null":"'"+request.body["reseller_payment_account_number"]+"'")},
+                        bank_name=${(request.body["reseller_payment_account_bank_name"]==null?"null":"'"+request.body["reseller_payment_account_bank_name"]+"'")},
+                        holder_name=${(request.body["reseller_payment_account_holder_name"]==null?"null":"'"+request.body["reseller_payment_account_holder_name"]+"'")},
+                        reseller_id=${request.body["reseller_id"]},
                         last_updated_user_id=${(request.body["responsible_user_id"]==null?"null":request.body["responsible_user_id"])},
                         last_updated_datetime=localtimestamp
-                        where resellers.id=${request.body['reseller_id']}
+                        where reseller_payment_accounts.id=${request.body['reseller_payment_account_id']}
                     `;
                     
                     await ditokokuSequelize.query(query,
@@ -201,54 +230,6 @@ const updateExecution = async(request, data) =>{
                             transaction,
                             raw: true
                         },);
-
-                //2 - Ambil data lengkap dari reseller yang sudah berhasil di update ke dalam database
-                const queryGetReseller = "select resellers.id reseller_id, resellers.username reseller_username, resellers.full_name reseller_full_name, resellers.phone_number reseller_phone_number, resellers.image_filename reseller_image_filename, genders.id as gender_id, genders.name as gender_name, ifnull(balance_bonus.amount, 0) balance_bonus_amount, ifnull(balance_regular.amount, 0) balance_regular_amount\n" +
-                "    , date_format(resellers.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
-                "    , date_format(resellers.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
-                " from " + process.env.DB_DATABASE_DITOKOKU + ".resellers\n" +
-                " left join " + process.env.DB_DATABASE_DITOKOKU + ".genders on resellers.gender_id = genders.id\n" +
-                " left join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_balances balance_bonus on balance_bonus.reseller_id = resellers.id and balance_bonus.reseller_balance_type_id=1\n" +
-                " left join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_balances balance_regular on balance_regular.reseller_id = resellers.id and balance_regular.reseller_balance_type_id=2\n" +
-                " where resellers.deleted_datetime is null and resellers.id = " + request.body['reseller_id'] +
-                ";";
-
-                resellerData = await ditokokuSequelize.query(queryGetReseller, {transaction, type: QueryTypes.SELECT});
-                
-                if(Object.values(resellerData).includes(null) === false){
-
-                    if(parseInt(resellerData[0].balance_bonus_amount) === 0){
-
-                        query = "select cbb.id configuration_balance_bonus_id, cbb.amount configuration_balance_bonus_amount, cbb.minimum_amount_sales_order\n" +
-                        " from " + process.env.DB_DATABASE_DITOKOKU + ".configuration_balance_bonus cbb\n" +
-                        " where cbb.deleted_datetime is null " ;
-                        const resultCheckExistConfigBalanceBonus = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
-                        
-                        query = `
-                        Insert into ${process.env.DB_DATABASE_DITOKOKU}.reseller_balances(amount, reseller_id, reseller_balance_type_id, created_datetime, created_user_id, last_updated_datetime, last_updated_user_id)
-                        values(
-                            ${resultCheckExistConfigBalanceBonus[0].configuration_balance_bonus_amount},
-                            ${request.body['reseller_id']},
-                            1,
-                            localtimestamp,
-                            ${(request.body["responsible_user_id"]==null?1:request.body["responsible_user_id"])},
-                            localtimestamp,
-                            ${(request.body["responsible_user_id"]==null?1:request.body["responsible_user_id"])}
-                        )
-                        `;
-
-                        await ditokokuSequelize.query(query,
-                            {
-                                type: QueryTypes.INSERT,
-                                transaction,
-                                raw: true
-                            },);
-
-                    }
-            
-                }
-
-                resellerData = await ditokokuSequelize.query(queryGetReseller, {transaction, type: QueryTypes.SELECT});
                 
             } catch (error) {
                 console.log(error)
@@ -264,9 +245,22 @@ const updateExecution = async(request, data) =>{
             };
         });
 
-        const reseller = resellerData
+            //2 - Ambil data lengkap dari Reseller yang sudah berhasil di simpan ke dalam database
+            query = "select rpa.id reseller_payment_account_id, rpa.number reseller_payment_account_number, rpa.bank_name reseller_payment_account_bank_name, rpa.holder_name reseller_payment_account_holder_name\n" +
+            "    , resellers.id reseller_id\n" +
+            "    , resellers.full_name reseller_full_name" +
+            "    , resellers.phone_number reseller_phone_number" +
+            "    , date_format(rpa.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
+            "    , date_format(rpa.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
+            "    , date_format(rpa.deleted_datetime,'%Y-%m-%d %H:%i:%s') deleted_datetime\n" +
+            " from " + process.env.DB_DATABASE_DITOKOKU + ".reseller_payment_accounts rpa\n" +
+            " left join " + process.env.DB_DATABASE_DITOKOKU + ".resellers on rpa.reseller_id = resellers.id\n" +
+            " where resellers.deleted_datetime is null and rpa.id = " + request.body['reseller_payment_account_id'] +
+            ";";
 
-        let resultJSON = JSON.parse(JSON.stringify(reseller));
+        const resellerPaymentAccount = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
+
+        let resultJSON = JSON.parse(JSON.stringify(resellerPaymentAccount));
         resultJSON[0].status_code = 200;
         return resultJSON[0];
     }catch(error){
@@ -286,4 +280,4 @@ const updateExecution = async(request, data) =>{
     }
 }
 
-export { resellersUpdate as default}
+export { resellerPaymentAccountsUpdate as default}

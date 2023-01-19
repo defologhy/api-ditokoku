@@ -3,26 +3,26 @@ import ditokokuSequelize from '../../../databases/connections/ditokoku-sequelize
 import jsonContentValidation from "../../validations/json-content-validation"
 import {format, utcToZonedTime} from "date-fns-tz";
 
-const categoryProductsDelete = async(request, response) =>{
+const resellerPaymentAccountsDelete = async(request, response) =>{
     try{
         /*
         1 - Validate JSON Format Content
-        2 - Pengecekan khusus untuk category product (pengecekan apakah data sudah pernah terdaftar di database)
-        3 - Execute Delete category product to Database
+        2 - Pengecekan khusus untuk Reseller (pengecekan apakah data sudah pernah terdaftar di database)
+        3 - Execute Delete Reseller to Database
          */
         //1 - Validate JSON Format Content
-        let jsonContentValidationResult = await jsonContentValidation(request.body, ["category_product_id"],["category_product_id"]);
+        let jsonContentValidationResult = await jsonContentValidation(request.body, ["reseller_payment_account_id"],["reseller_payment_account_id"]);
         if(jsonContentValidationResult.status_code !=  200){
             throw jsonContentValidationResult;
         }
 
-        //2 - Pengecekan khusus untuk category product (pengecekan apakah data tersedia di database)
+        //2 - Pengecekan khusus untuk Reseller (pengecekan apakah data tersedia di database)
         let specificValidationResult = await specificValidation(request);
         if(specificValidationResult.status_code !=  200){
             throw specificValidationResult;
         }
 
-        //3 - Execute Delete category product to Database
+        //3 - Execute Delete Reseller to Database
         let deleteExecutionResult = await deleteExecution(request);
         if(deleteExecutionResult.status_code !=  200){
             throw deleteExecutionResult;
@@ -54,27 +54,27 @@ const categoryProductsDelete = async(request, response) =>{
 const specificValidation = async(request) =>{
     try{
         /*
-        1. Periksa apakah category product ID Tersedia Di Database
+        1. Periksa apakah Reseller ID Tersedia Di Database
          */
         let query = "";
         let resultCheckExist= [];
 
-        // 1. Periksa apakah category product ID Tersedia Di Database
-        query = " select cp.id\n" +
-            " from "+process.env.DB_DATABASE_DITOKOKU+".category_products cp\n" +
-            " where cp.deleted_datetime is null and cp.id = '" + request.body["category_product_id"] + "' \n" +
-            ";"
-        resultCheckExist = await ditokokuSequelize.query(query,{ type: QueryTypes.SELECT });
+        // 1. Periksa apakah Reseller ID Tersedia Di Database
+        query = `select rpa.id, rpa.bank_name, rpa.holder_name, rpa.number
+                from ${process.env.DB_DATABASE_DITOKOKU}.reseller_payment_accounts rpa
+                where id = '${request.body["reseller_payment_account_id"]}' and deleted_datetime is null
+            ;`;
+        const resultCheckExistData = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
 
-        if(resultCheckExist.length == 0){
+        if(resultCheckExistData.length == 0){
             const errorTitle = ()=>{switch(process.env.APP_LANGUAGE){
-                case "INDONESIA" : return "Data category product tidak terdaftar"; break;
-                default : return "category product Data doesnt exist"; break;
+                case "INDONESIA" : return "Data reseller akun bank tidak terdaftar"; break;
+                default : return "reseller akun bank Data doesnt exist"; break;
             }}
             const errorMessage = ()=>{switch(process.env.APP_LANGUAGE){
-                case "INDONESIA" : return "category product dengan id [" + request.body["category_product_id"] +
-                    "] tidak terdaftar di dalam system, sehingga hapus data [category product] tidak bisa di proses lebih lanjut."; break;
-                default : return "[category product] deleted could not be processed because the category product doesnt exist before this request."; break;
+                case "INDONESIA" : return "reseller akun bank dengan id [" + request.body["reseller_payment_account_id"] +
+                    "] tidak terdaftar di dalam system, sehingga perubahan [reseller akun bank] tidak bisa di proses lebih lanjut."; break;
+                default : return "[reseller akun bank] updated could not be processed because the reseller akun bank doesnt exist before this request."; break;
             }}
             const errorJSON ={
                 status_code: 400,
@@ -112,20 +112,20 @@ const specificValidation = async(request) =>{
 const deleteExecution = async(request) =>{
     try{
         /*
-        1 - Delete Data category product dari Database
-        2 - Ambil data lengkap dari category product yang sudah berhasil di Delete
+        1 - Delete Data Reseller dari Database
+        2 - Ambil data lengkap dari Reseller yang sudah berhasil di Delete
          */
 
-        //1 - Delete Data category product ke Database
+        //1 - Delete Data Reseller ke Database
         let query = "";
         await ditokokuSequelize.transaction(async transaction => {
             try {
 
-                //Delete Data category product To Database
-                query = "update " + process.env.DB_DATABASE_DITOKOKU + ".category_products set\n" +
+                //Delete Data Reseller To Database
+                query = "update " + process.env.DB_DATABASE_DITOKOKU + ".reseller_payment_accounts set\n" +
                         "deleted_datetime=localtimestamp ,"+
                         "deleted_user_id="+request.body["responsible_user_id"]+" "+
-                        "where id="+request.body["category_product_id"]+";"
+                        "where id="+request.body["reseller_payment_account_id"]+";"
 
                     await ditokokuSequelize.query(query,
                         {
@@ -147,18 +147,22 @@ const deleteExecution = async(request) =>{
             };
         });
 
-        //2 - Ambil data lengkap dari category product yang sudah berhasil di Delete
-        query = "select cp.id category_product_id, cp.name category_product_name\n" +
-                "    , date_format(cp.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
-                "    , date_format(cp.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
-                "    , date_format(cp.deleted_datetime,'%Y-%m-%d %H:%i:%s') deleted_datetime\n" +
-                " from " + process.env.DB_DATABASE_DITOKOKU + ".category_products cp\n" +
-                " where cp.id = " +request.body["category_product_id"]
-                ";";
+        //2 - Ambil data lengkap dari Reseller yang sudah berhasil di simpan ke dalam database
+        query = "select rpa.id reseller_payment_account_id, rpa.number reseller_payment_account_number, rpa.bank_name reseller_payment_account_bank_name, rpa.holder_name reseller_payment_account_holder_name\n" +
+            "    , resellers.id reseller_id\n" +
+            "    , resellers.full_name reseller_full_name" +
+            "    , resellers.phone_number reseller_phone_number" +
+            "    , date_format(rpa.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
+            "    , date_format(rpa.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
+            "    , date_format(rpa.deleted_datetime,'%Y-%m-%d %H:%i:%s') deleted_datetime\n" +
+            " from " + process.env.DB_DATABASE_DITOKOKU + ".reseller_payment_accounts rpa\n" +
+            " left join " + process.env.DB_DATABASE_DITOKOKU + ".resellers on rpa.reseller_id = resellers.id\n" +
+            " where rpa.id = " + request.body['reseller_payment_account_id'] +
+            ";";
 
-        const categoryProduct = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
+        const resellerPaymentAccount = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
 
-        let resultJSON = JSON.parse(JSON.stringify(categoryProduct));
+        let resultJSON = JSON.parse(JSON.stringify(resellerPaymentAccount));
         resultJSON[0].status_code = 200;
         return resultJSON[0];
         
@@ -179,4 +183,4 @@ const deleteExecution = async(request) =>{
     }
 }
 
-export { categoryProductsDelete as default}
+export { resellerPaymentAccountsDelete as default}

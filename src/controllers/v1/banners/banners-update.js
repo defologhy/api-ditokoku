@@ -129,7 +129,9 @@ const updateExecution = async(request, data) =>{
 
                 //Update Data banners To Database
                 query = `update ${process.env.DB_DATABASE_DITOKOKU}.banners set
-                        description=${(request.body["banner_description"]==null?"null":"'"+request.body["banner_description"]+"'")}
+                        description=${(request.body["banner_description"]==null?"null":"'"+request.body["banner_description"]+"'")},
+                        last_updated_user_id=${(request.body["responsible_user_id"]==null?"null":request.body["responsible_user_id"])},
+                        last_updated_datetime=localtimestamp
                         where banners.id=${request.body['banner_id']}
                     `;
                     

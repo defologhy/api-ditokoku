@@ -189,7 +189,9 @@ const updateExecution = async(request, data) =>{
                 query = `update ${process.env.DB_DATABASE_DITOKOKU}.admins set
                         username=${(request.body["admin_username"]==null?"null":"'"+request.body["admin_username"]+"'")},
                         full_name=${(request.body["admin_full_name"]==null?"null":"'"+request.body["admin_full_name"]+"'")},
-                        password=${passwordValue}
+                        password=${passwordValue},
+                        last_updated_user_id=${(request.body["responsible_user_id"]==null?"null":request.body["responsible_user_id"])},
+                        last_updated_datetime=localtimestamp
                         where admins.id=${request.body['admin_id']}
                     `;
                     

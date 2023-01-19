@@ -8,6 +8,9 @@ import configurationBalanceBonusRoutesV1 from './routes/v1/configuration-balance
 import bannersRoutesV1 from './routes/v1/banners';
 import adminsRoutesV1 from './routes/v1/admins';
 import categoryProductsRoutesV1 from './routes/v1/category-products'
+import resellerPaymentAccountsRoutesV1 from './routes/v1/reseller-payment-accounts'
+import resellerTopUpBalancesRegularProgressStatusRoutesV1 from './routes/v1/reseller-topup-balances-regular-progress-status'
+import resellerTopUpBalancesRegularRoutesV1 from './routes/v1/reseller-topup-balances-regular'
 
 import databaseSynchronize from "./databases/database-synchronize";
 
@@ -81,6 +84,9 @@ app.use("/api/v1/configuration-balance-bonus", configurationBalanceBonusRoutesV1
 app.use("/api/v1/banners", bannersRoutesV1);
 app.use("/api/v1/admins", adminsRoutesV1);
 app.use("/api/v1/category-products", categoryProductsRoutesV1);
+app.use("/api/v1/reseller-payment-accounts", resellerPaymentAccountsRoutesV1);
+app.use("/api/v1/reseller-topup-balance-regular", resellerTopUpBalancesRegularRoutesV1);
+app.use("/api/v1/reseller-topup-balance-regular-progress-status", resellerTopUpBalancesRegularProgressStatusRoutesV1);
 
 // databaseSynchronize();
 
