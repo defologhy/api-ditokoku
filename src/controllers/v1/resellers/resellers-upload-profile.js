@@ -23,12 +23,12 @@ const resellerUploadProfile = async (request, response) => {
                 ";";
                 const resellerImageData = await ditokokuSequelize.query(query, {transaction, type: QueryTypes.SELECT});
 
-                if(resellerImageData[0].image_filename!==null){
-                    unlink('public/assets/images/profil/reseller/' + resellerImageData[0].image_filename, (err) => {
-                        if (err) throw err;
-                        console.log('file before was deleted');
-                    });
-                }
+                // if(resellerImageData[0].image_filename!==null){
+                //     unlink('public/assets/images/profil/reseller/' + resellerImageData[0].image_filename, (err) => {
+                //         if (err) throw err;
+                //         console.log('file before was deleted');
+                //     });
+                // }
 
                 const newpath = "public/assets/images/profil/reseller/"+ request.body['file_name'];
                 const file = request.files.file;
