@@ -1,6 +1,7 @@
 import express from "express";
 import {QueryTypes} from "sequelize";
 import ditokokuSequelize from "../databases/connections/ditokoku-sequelize";
+import commonDashboardGet from "../controllers/v1/common/common-dashboard";
 
 const router = new express.Router()
 
@@ -23,6 +24,10 @@ router.get("/database-timestamp",async (request, response)=>{
         , "current_database_timestamp" : currentDateTime[0].current_datetime
     }
     return response.status(200).send(resultResponse)
+})
+
+router.get("/dashboard", async (request, response) => {
+    return commonDashboardGet(request, response);
 })
 
 export {router as default};

@@ -159,7 +159,7 @@ const verifikasiExecution = async(request, resellerTopupBalanceRegularData) =>{
                         
                     query = "select rb.id"+
                             " from " + process.env.DB_DATABASE_DITOKOKU + ".reseller_balances rb\n" +
-                            " where deleted_datetime is null and rb.reseller_id = " + resellerTopupBalanceRegularData.reseller_id +
+                            " where deleted_datetime is null and rb.reseller_id = " + resellerTopupBalanceRegularData.reseller_id + " and reseller_balance_type_id = 2"
                             ";";
                     const resellerBalanceRegular = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
                     
