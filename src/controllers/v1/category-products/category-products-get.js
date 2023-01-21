@@ -113,7 +113,7 @@ const categoryProductsGet = async(request, response) =>{
         pagination.total_records = recordCounts[0].record_counts;
 
         //6 - Ambil data dari database
-        const query = "select cp.id category_product_id, cp.name category_product_name\n" +
+        const query = "select cp.id category_product_id, cp.name category_product_name, cp.image_filename category_product_image_filename\n" +
             "    , date_format(cp.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
             "    , date_format(cp.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
             "    , date_format(cp.deleted_datetime,'%Y-%m-%d %H:%i:%s') deleted_datetime\n" +

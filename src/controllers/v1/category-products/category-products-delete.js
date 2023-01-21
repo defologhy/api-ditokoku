@@ -2,6 +2,7 @@ import {QueryTypes} from "sequelize";
 import ditokokuSequelize from '../../../databases/connections/ditokoku-sequelize';
 import jsonContentValidation from "../../validations/json-content-validation"
 import {format, utcToZonedTime} from "date-fns-tz";
+import { unlink } from 'node:fs';
 
 const categoryProductsDelete = async(request, response) =>{
     try{
@@ -117,7 +118,7 @@ const deleteExecution = async(request) =>{
          */
 
         //1 - Delete Data category product ke Database
-        let query = "";
+        let query = "", categoryProduct=[];
         await ditokokuSequelize.transaction(async transaction => {
             try {
 
@@ -133,6 +134,25 @@ const deleteExecution = async(request) =>{
                             transaction,
                             raw: true
                         },);
+
+                        //2 - Ambil data lengkap dari category product yang sudah berhasil di Delete
+                        query = "select cp.id category_product_id, cp.name category_product_name, cp.image_filename category_product_image_filename\n" +
+                        "    , date_format(cp.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
+                        "    , date_format(cp.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
+                        "    , date_format(cp.deleted_datetime,'%Y-%m-%d %H:%i:%s') deleted_datetime\n" +
+                        " from " + process.env.DB_DATABASE_DITOKOKU + ".category_products cp\n" +
+                        " where cp.id = " +request.body["category_product_id"]
+                        ";";
+
+                        categoryProduct = await ditokokuSequelize.query(query, {tracsaction, type: QueryTypes.SELECT});
+
+                        // if(categoryProduct[0].category_product_image_filename!==null){
+                        //     unlink('public/assets/images/category-products/' + categoryProduct[0].category_product_image_filename, (err) => {
+                        //         if (err) throw err;
+                        //         console.log('file before was deleted');
+                        //     });
+                        // }
+                        
             } catch (error) {
                 console.log(error)
                 const errorJSON ={
@@ -147,16 +167,7 @@ const deleteExecution = async(request) =>{
             };
         });
 
-        //2 - Ambil data lengkap dari category product yang sudah berhasil di Delete
-        query = "select cp.id category_product_id, cp.name category_product_name\n" +
-                "    , date_format(cp.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
-                "    , date_format(cp.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
-                "    , date_format(cp.deleted_datetime,'%Y-%m-%d %H:%i:%s') deleted_datetime\n" +
-                " from " + process.env.DB_DATABASE_DITOKOKU + ".category_products cp\n" +
-                " where cp.id = " +request.body["category_product_id"]
-                ";";
-
-        const categoryProduct = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
+        
 
         let resultJSON = JSON.parse(JSON.stringify(categoryProduct));
         resultJSON[0].status_code = 200;

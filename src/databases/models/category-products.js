@@ -13,6 +13,10 @@ const CategoryProducts = ditokokuSequelize.define('CategoryProducts', {
         type: DataTypes.STRING(50),
         allowNull: false
     },
+    image_filename: {
+        type: DataTypes.STRING(300),
+        allowNull: true
+    },
     created_datetime: {
         type: DataTypes.DATE(3),
         allowNull: false,

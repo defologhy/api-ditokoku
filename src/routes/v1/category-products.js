@@ -4,6 +4,7 @@ import categoryProductsGet from "../../controllers/v1/category-products/category
 import categoryProductsInsert from "../../controllers/v1/category-products/category-products-insert";
 import categoryProductsUpdate from "../../controllers/v1/category-products/category-products-update";
 import categoryProductsDelete from "../../controllers/v1/category-products/category-products-delete";
+import categoryProductsUploadImage from "../../controllers/v1/category-products/category-products-upload-image";
 
 const router = new express.Router()
 
@@ -21,6 +22,10 @@ router.patch("/", async (request, response) => {
 
 router.delete("/", async (request, response) => {
     return categoryProductsDelete(request, response);
+})
+
+router.post("/upload-image", async (request, response) => {
+    return categoryProductsUploadImage(request, response);
 })
 
  export {router as default};

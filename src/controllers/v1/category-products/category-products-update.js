@@ -196,7 +196,7 @@ const updateExecution = async (request) => {
                     });
 
                 //2 - Ambil data lengkap dari category product yang sudah berhasil di simpan ke dalam database
-                query = "select cp.id category_product_id, cp.name category_product_name\n" +
+                query = "select cp.id category_product_id, cp.name category_product_name, cp.image_filename category_product_image_filename\n" +
                 "    , date_format(cp.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
                 "    , date_format(cp.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
                 "    , date_format(cp.deleted_datetime,'%Y-%m-%d %H:%i:%s') deleted_datetime\n" +
