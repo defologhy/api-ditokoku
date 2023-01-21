@@ -166,6 +166,28 @@ const resellerTopupBalanceRegularGet = async(request, response) =>{
         const recordCounts = await ditokokuSequelize.query(queryCount,{ type: QueryTypes.SELECT });
         pagination.total_records = recordCounts[0].record_counts;
 
+        const queryCountProcess = "select count(rtbr.id) record_counts\n" +
+            " from " + process.env.DB_DATABASE_DITOKOKU + ".reseller_topup_balances_regular rtbr\n" +
+            " join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_payment_accounts rpa on rtbr.payment_account_id = rpa.id\n" +
+            " join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_topup_balances_regular_progress_status rtbrps on rtbr.progress_status_id = rtbrps.id\n" +
+            " join " + process.env.DB_DATABASE_DITOKOKU + ".resellers on rtbr.reseller_id = resellers.id\n" +
+            " where rtbr.deleted_datetime is null and rtbrps.id = 1\n" +
+            filterCondition +
+            ";"
+        const recordCountsProcess = await ditokokuSequelize.query(queryCountProcess,{ type: QueryTypes.SELECT });
+        pagination.total_records_process = recordCountsProcess[0].record_counts;
+
+        const queryCountVerified = "select count(rtbr.id) record_counts\n" +
+        " from " + process.env.DB_DATABASE_DITOKOKU + ".reseller_topup_balances_regular rtbr\n" +
+        " join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_payment_accounts rpa on rtbr.payment_account_id = rpa.id\n" +
+        " join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_topup_balances_regular_progress_status rtbrps on rtbr.progress_status_id = rtbrps.id\n" +
+        " join " + process.env.DB_DATABASE_DITOKOKU + ".resellers on rtbr.reseller_id = resellers.id\n" +
+        " where rtbr.deleted_datetime is null and rtbrps.id = 2\n" +
+        filterCondition +
+        ";"
+        const recordCountsVerified = await ditokokuSequelize.query(queryCountVerified,{ type: QueryTypes.SELECT });
+        pagination.total_records_verified = recordCountsVerified[0].record_counts;
+
         //6 - Ambil data dari database
         const query = "select rtbr.id reseller_topup_balance_regular_id, rtbr.amount reseller_topup_balance_regular_amount"+
             "     , rpa.id reseller_payment_account_id, rpa.bank_name reseller_payment_account_bank_name, rpa.holder_name reseller_payment_account_holder_name, rpa.number reseller_payment_account_number\n" +
@@ -210,6 +232,8 @@ const resellerTopupBalanceRegularGet = async(request, response) =>{
                 "current_page": pagination.current_page
                 , "page_size": pagination.page_size
                 , "total_records": pagination.total_records
+                , "total_records_process": pagination.total_records_process
+                , "total_records_verified": pagination.total_records_verified
             }
             , "data" : resellertbrymentAccounts
         }
