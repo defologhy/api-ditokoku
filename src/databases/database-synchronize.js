@@ -10,6 +10,7 @@ import CategoryProducts from './models/category-products';
 import ResellerPaymentAccounts from './models/reseller-payment-accounts';
 import ResellerTopupBalancesRegularProgressStatus from './models/reseller-topup-balances-regular-progress-status';
 import ResellerTopupBalancesRegular from './models/reseller-topup-balances-regular';
+import ConfigurationPaymentAccountDestinations from './models/configuration-payment-account-destination';
 
 const databaseSynchronize = async()=> {
     try {
@@ -23,6 +24,7 @@ const databaseSynchronize = async()=> {
             ResellerTopupBalancesRegular.belongsTo(Resellers, {foreignKey: 'reseller_id', targetKey: 'id'});
             ResellerTopupBalancesRegular.belongsTo(ResellerTopupBalancesRegularProgressStatus, {foreignKey: 'progress_status_id', targetKey: 'id'});
             ResellerTopupBalancesRegular.belongsTo(ResellerPaymentAccounts, {foreignKey: 'payment_account_id', targetKey: 'id'});
+            ResellerTopupBalancesRegular.belongsTo(ConfigurationPaymentAccountDestinations, {foreignKey: 'payment_account_destination_id', targetKey: 'id'});
             
             await Genders.sync({ alter:true });
             console.log('genders synchronize successfully.');
@@ -56,6 +58,9 @@ const databaseSynchronize = async()=> {
 
             await ResellerTopupBalancesRegular.sync({ alter:true });
             console.log('reseller_topup_balances_regular synchronize successfully.');
+
+            await ConfigurationPaymentAccountDestinations.sync({ alter:true });
+            console.log('configuration_payment_account_destinations synchronize successfully.');
             
         } catch (error) {
             console.error('database synchronization failed: ', error);

@@ -11,7 +11,7 @@ import categoryProductsRoutesV1 from './routes/v1/category-products'
 import resellerPaymentAccountsRoutesV1 from './routes/v1/reseller-payment-accounts'
 import resellerTopUpBalancesRegularProgressStatusRoutesV1 from './routes/v1/reseller-topup-balances-regular-progress-status'
 import resellerTopUpBalancesRegularRoutesV1 from './routes/v1/reseller-topup-balances-regular'
-
+import configurationPaymentAccountDestinationsRoutesV1 from './routes/v1/configuration-payment-account-destinations'
 import databaseSynchronize from "./databases/database-synchronize";
 
 const app = express();
@@ -87,6 +87,7 @@ app.use("/api/v1/category-products", categoryProductsRoutesV1);
 app.use("/api/v1/reseller-payment-accounts", resellerPaymentAccountsRoutesV1);
 app.use("/api/v1/reseller-topup-balance-regular", resellerTopUpBalancesRegularRoutesV1);
 app.use("/api/v1/reseller-topup-balance-regular-progress-status", resellerTopUpBalancesRegularProgressStatusRoutesV1);
+app.use("/api/v1/configuration-payment-account-destinations", configurationPaymentAccountDestinationsRoutesV1);
 
 // databaseSynchronize();
 

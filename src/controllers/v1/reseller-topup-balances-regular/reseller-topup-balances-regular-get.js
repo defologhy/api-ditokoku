@@ -195,6 +195,10 @@ const resellerTopupBalanceRegularGet = async(request, response) =>{
             "    , resellers.id reseller_id\n" +
             "    , resellers.full_name reseller_full_name" +
             "    , resellers.phone_number reseller_phone_number" +
+            "    , cpad.id payment_account_destination_id" +
+            "    , cpad.bank_name payment_account_destination_bank_name" +
+            "    , cpad.number payment_account_destination_number" +
+            "    , cpad.holder_name payment_account_destination_holder_name" +
             "    , date_format(rtbr.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
             "    , date_format(rtbr.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
             "    , date_format(rtbr.deleted_datetime,'%Y-%m-%d %H:%i:%s') deleted_datetime\n" +
@@ -202,6 +206,7 @@ const resellerTopupBalanceRegularGet = async(request, response) =>{
             " join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_payment_accounts rpa on rtbr.payment_account_id = rpa.id\n" +
             " join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_topup_balances_regular_progress_status rtbrps on rtbr.progress_status_id = rtbrps.id\n" +
             " join " + process.env.DB_DATABASE_DITOKOKU + ".resellers on rtbr.reseller_id = resellers.id\n" +
+            " join " + process.env.DB_DATABASE_DITOKOKU + ".configuration_payment_account_destinations cpad on rtbr.payment_account_destination_id = cpad.id\n" +
             " where rtbr.deleted_datetime is null " +
             (filterCondition!=null?filterCondition:'') +
             (sortCondition!=null?sortCondition:'') +
@@ -209,7 +214,7 @@ const resellerTopupBalanceRegularGet = async(request, response) =>{
             (paginationConditionOffSet!=null?paginationConditionOffSet:'') +
             ";" ;
 
-        const resellertbrymentAccounts = await ditokokuSequelize.query(query,{ type: QueryTypes.SELECT });
+        const resellerTopUpBalanceRegular = await ditokokuSequelize.query(query,{ type: QueryTypes.SELECT });
 
         //7 - Isi data ke dalam Response
         if (request.query.page_size === null && (request.query.all_data === true || request.query.all_data === 'true' || request.query.all_data === '1' || request.query.all_data === 1)) {
@@ -235,7 +240,7 @@ const resellerTopupBalanceRegularGet = async(request, response) =>{
                 , "total_records_process": pagination.total_records_process
                 , "total_records_verified": pagination.total_records_verified
             }
-            , "data" : resellertbrymentAccounts
+            , "data" : resellerTopUpBalanceRegular
         }
 
         return response.status(200).send(resultResponse);

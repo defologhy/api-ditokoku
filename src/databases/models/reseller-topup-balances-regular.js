@@ -25,6 +25,10 @@ const ResellerTopupBalancesRegular = ditokokuSequelize.define('ResellerTopupBala
         type: DataTypes.INTEGER,
         allowNull: false
     },
+    payment_account_destination_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
     created_datetime: {
         type: DataTypes.DATE(3),
         allowNull: false,
@@ -84,6 +88,14 @@ const ResellerTopupBalancesRegular = ditokokuSequelize.define('ResellerTopupBala
             unique: false,
             fields: [{
                 attribute: 'payment_account_id',
+                order: 'ASC'
+            }]
+        },
+        {
+            name: 'idx_reseller_topup_balances_regular_payment_account_destination',
+            unique: false,
+            fields: [{
+                attribute: 'payment_account_destination_id',
                 order: 'ASC'
             }]
         },

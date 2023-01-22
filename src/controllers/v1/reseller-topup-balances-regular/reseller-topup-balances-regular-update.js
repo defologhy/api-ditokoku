@@ -12,7 +12,7 @@ const resellerTopupBalanceRegularUpdate = async(request, response) =>{
          */
 
         //1 - Validate JSON Format Content
-        let jsonContentValidationResult = await jsonContentValidation(request.body, ["reseller_topup_balance_regular_id","reseller_topup_balance_regular_amount", "reseller_id", "reseller_payment_account_id"], ["reseller_topup_balance_regular_id","reseller_topup_balance_regular_amount", "reseller_id", "reseller_payment_account_id"]);
+        let jsonContentValidationResult = await jsonContentValidation(request.body, ["reseller_topup_balance_regular_id","reseller_topup_balance_regular_amount", "reseller_id", "reseller_payment_account_id", "payment_account_destination_id"], ["reseller_topup_balance_regular_id","reseller_topup_balance_regular_amount", "reseller_id", "reseller_payment_account_id", "payment_account_destination_id"]);
         if (jsonContentValidationResult.status_code != 200) {
             throw jsonContentValidationResult;
         }
@@ -168,6 +168,32 @@ const specificValidation = async(request) =>{
             throw errorJSON
         }
 
+        query = `select cpad.id, cpad.bank_name, cpad.holder_name, cpad.number
+                from ${process.env.DB_DATABASE_DITOKOKU}.configuration_payment_account_destinations cpad
+                where id = '${request.body["payment_account_destination_id"]}' and deleted_datetime is null
+            ;`;
+        const resultCheckExistData = await ditokokuSequelize.query(query, {type: QueryTypes.SELECT});
+
+        if(resultCheckExistData.length == 0){
+            const errorTitle = ()=>{switch(process.env.APP_LANGUAGE){
+                case "INDONESIA" : return "Data akun bank tidak terdaftar"; break;
+                default : return "akun bank Data doesnt exist"; break;
+            }}
+            const errorMessage = ()=>{switch(process.env.APP_LANGUAGE){
+                case "INDONESIA" : return "akun bank dengan id [" + request.body["payment_account_destination_id"] +
+                    "] tidak terdaftar di dalam system, sehingga perubahan [payment account destination] tidak bisa di proses lebih lanjut."; break;
+                default : return "[payment account destination] updated could not be processed because the akun bank doesnt exist before this request."; break;
+            }}
+            const errorJSON ={
+                status_code: 400,
+                timestamp: format(utcToZonedTime(Date.now(),process.env.APP_TIMEZONE), 'yyyy-MM-dd HH:mm:ss.SSS',{timeZone: process.env.APP_TIMEZONE}),
+                error_title: errorTitle(),
+                error_message: errorMessage(),
+                path: request.protocol + '://' + request.get('host') + request.originalUrl
+            }
+            throw errorJSON
+        }
+
         const resultJSON ={
             status_code: 200,
             reseller_data: resultCheckExist[0]
@@ -209,6 +235,7 @@ const updateExecution = async(request) =>{
                         amount=${(request.body["reseller_topup_balance_regular_amount"]==null?"null":request.body["reseller_topup_balance_regular_amount"])},
                         reseller_id=${(request.body["reseller_id"]==null?"null":request.body["reseller_id"])},
                         payment_account_id=${(request.body["reseller_payment_account_id"]==null?"null":request.body["reseller_payment_account_id"])},
+                        payment_account_destination_id=${(request.body["payment_account_destination_id"]==null?"null":request.body["payment_account_destination_id"])},
                         last_updated_user_id=${(request.body["responsible_user_id"]==null?"null":request.body["responsible_user_id"])},
                         last_updated_datetime=localtimestamp
                         where reseller_topup_balances_regular.id=${request.body['reseller_topup_balance_regular_id']}
@@ -242,6 +269,10 @@ const updateExecution = async(request) =>{
                 "    , resellers.id reseller_id\n" +
                 "    , resellers.full_name reseller_full_name" +
                 "    , resellers.phone_number reseller_phone_number" +
+                "    , cpad.id payment_account_destination_id" +
+                "    , cpad.bank_name payment_account_destination_bank_name" +
+                "    , cpad.number payment_account_destination_number" +
+                "    , cpad.holder_name payment_account_destination_holder_name" +
                 "    , date_format(rtbr.created_datetime,'%Y-%m-%d %H:%i:%s') created_datetime\n" +
                 "    , date_format(rtbr.last_updated_datetime,'%Y-%m-%d %H:%i:%s') last_updated_datetime\n" +
                 "    , date_format(rtbr.deleted_datetime,'%Y-%m-%d %H:%i:%s') deleted_datetime\n" +
@@ -249,6 +280,7 @@ const updateExecution = async(request) =>{
                 " join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_payment_accounts rpa on rtbr.payment_account_id = rpa.id\n" +
                 " join " + process.env.DB_DATABASE_DITOKOKU + ".reseller_topup_balances_regular_progress_status rtbrps on rtbr.progress_status_id = rtbrps.id\n" +
                 " join " + process.env.DB_DATABASE_DITOKOKU + ".resellers on rtbr.reseller_id = resellers.id\n" +
+                " join " + process.env.DB_DATABASE_DITOKOKU + ".configuration_payment_account_destinations cpad on rtbr.payment_account_destination_id = cpad.id\n" +
                 " where rtbr.deleted_datetime is null and rtbr.id = " + request.body['reseller_topup_balance_regular_id'] +
                 ";";
 
