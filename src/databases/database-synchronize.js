@@ -11,6 +11,10 @@ import ResellerPaymentAccounts from './models/reseller-payment-accounts';
 import ResellerTopupBalancesRegularProgressStatus from './models/reseller-topup-balances-regular-progress-status';
 import ResellerTopupBalancesRegular from './models/reseller-topup-balances-regular';
 import ConfigurationPaymentAccountDestinations from './models/configuration-payment-account-destination';
+import RegionProvinces from './models/region-provinces';
+import RegionCityRegencies from './models/region-city-regencies';
+import RegionDistricts from './models/region-districts';
+import RegionVillages from './models/region-villages';
 
 const databaseSynchronize = async()=> {
     try {
@@ -25,6 +29,10 @@ const databaseSynchronize = async()=> {
             ResellerTopupBalancesRegular.belongsTo(ResellerTopupBalancesRegularProgressStatus, {foreignKey: 'progress_status_id', targetKey: 'id'});
             ResellerTopupBalancesRegular.belongsTo(ResellerPaymentAccounts, {foreignKey: 'payment_account_id', targetKey: 'id'});
             ResellerTopupBalancesRegular.belongsTo(ConfigurationPaymentAccountDestinations, {foreignKey: 'payment_account_destination_id', targetKey: 'id'});
+            RegionCityRegencies.belongsTo(RegionProvinces, {foreignKey: 'province_id', targetKey: 'id'});
+            RegionDistricts.belongsTo(RegionCityRegencies, {foreignKey: 'city_regency_id', targetKey: 'id'});
+            RegionVillages.belongsTo(RegionDistricts, {foreignKey: 'district_id', targetKey: 'id'});
+            RegionVillages.belongsTo(RegionCityRegencies, {foreignKey: 'city_regency_id', targetKey: 'id'});
             
             await Genders.sync({ alter:true });
             console.log('genders synchronize successfully.');
@@ -61,6 +69,18 @@ const databaseSynchronize = async()=> {
 
             await ConfigurationPaymentAccountDestinations.sync({ alter:true });
             console.log('configuration_payment_account_destinations synchronize successfully.');
+
+            await RegionProvinces.sync({ alter:true });
+            console.log('region_provinces synchronize successfully.');
+
+            await RegionCityRegencies.sync({ alter:true });
+            console.log('region_city_regencies synchronize successfully.');
+
+            await RegionDistricts.sync({ alter:true });
+            console.log('region_districts synchronize successfully.');
+
+            await RegionVillages.sync({ alter:true });
+            console.log('region_villages synchronize successfully.');
             
         } catch (error) {
             console.error('database synchronization failed: ', error);

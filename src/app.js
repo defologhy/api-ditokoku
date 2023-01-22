@@ -89,6 +89,6 @@ app.use("/api/v1/reseller-topup-balance-regular", resellerTopUpBalancesRegularRo
 app.use("/api/v1/reseller-topup-balance-regular-progress-status", resellerTopUpBalancesRegularProgressStatusRoutesV1);
 app.use("/api/v1/configuration-payment-account-destinations", configurationPaymentAccountDestinationsRoutesV1);
 
-// databaseSynchronize();
+databaseSynchronize();
 
 export { app as default }
